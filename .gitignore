@@ -1,0 +1,24 @@
+# Anchor
+.anchor
+target/
+node_modules/
+test-ledger/
+.DS_Store
+
+# Build artifacts
+*.so
+*.json.backup
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env files
+.env
+.env.local
+
+# Logs
+*.log
