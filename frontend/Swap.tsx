@@ -42,11 +42,15 @@ type SelectedTokenType =
 const Swap: React.FC = () => {
   const { address, isConnected } = useAccount();
   const solanaWallet = useWallet();
-  const { setSelectedChain } = useChainSelection();
+  const { selectedChain, setSelectedChain } = useChainSelection();
   const [searchParams] = useSearchParams();
   const swapDirection = 'usdc-to-usdx' as const;
   const [activeTab, setActiveTab] = useState<'same-chain' | 'cross-chain'>('same-chain');
-  const [selectedToken, setSelectedToken] = useState<SelectedTokenType>({ token: 'usdx', chain: 'base' });
+  // Initialize selectedToken based on current chain selection from context
+  const [selectedToken, setSelectedToken] = useState<SelectedTokenType>(() => ({
+    token: 'usdx',
+    chain: selectedChain
+  }));
   const [tokenSelectorOpen, setTokenSelectorOpen] = useState(false);
   const [inputAmount, setInputAmount] = useState('');
   const [outputAmount, setOutputAmount] = useState('');
@@ -57,6 +61,13 @@ const Swap: React.FC = () => {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [priceChangeData, setPriceChangeData] = useState<PriceChangeData | null>(null);
   const [referralCode, setReferralCode] = useState<string>('');
+  const [referralCodeBenefits, setReferralCodeBenefits] = useState<{
+    is_valid: boolean;
+    is_special: boolean;
+    min_swap: number;
+    bonus_points: number;
+    description: string;
+  } | null>(null);
 
   // Solana balances
   const [solanaUsdcBalance, setSolanaUsdcBalance] = useState<number>(0);
@@ -210,6 +221,34 @@ const Swap: React.FC = () => {
       setReferralCode(storedRef);
     }
   }, [searchParams]);
+
+  // Check referral code benefits when code changes
+  useEffect(() => {
+    const checkCodeBenefits = async () => {
+      if (!referralCode) {
+        setReferralCodeBenefits(null);
+        return;
+      }
+
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://stable-ecosystem-api.onrender.com';
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/referrals/check-code/${referralCode}`);
+        const data = await response.json();
+
+        if (data.success && data.data.is_valid) {
+          setReferralCodeBenefits(data.data);
+        } else {
+          setReferralCodeBenefits(null);
+        }
+      } catch (error) {
+        console.error('Error checking referral code:', error);
+        setReferralCodeBenefits(null);
+      }
+    };
+
+    checkCodeBenefits();
+  }, [referralCode]);
 
   // Fetch EUR/USD 24h price change data
   useEffect(() => {
@@ -460,7 +499,10 @@ const Swap: React.FC = () => {
     }
 
     // Base (EVM) swap logic
-    if (!address) return;
+    if (!address) {
+      alert('Please connect your Base/EVM wallet to swap on Base');
+      return;
+    }
 
     setIsLoading(true);
     setLastTransactionType('swap');
@@ -498,20 +540,28 @@ const Swap: React.FC = () => {
     ? solanaUsdcBalance.toFixed(2)
     : (usdcBalance ? Number(formatUnits(usdcBalance as bigint, 6)).toFixed(2) : '0.00');
 
+  // Use referral code benefits for minimum deposit if available
+  const minDeposit = referralCodeBenefits?.is_valid
+    ? referralCodeBenefits.min_swap
+    : 100; // Default 100 USDC minimum
 
-  const minDeposit = 100; // 100 USDC minimum for all chains
   const canSwap = inputAmount &&
     Number(inputAmount) > 0 &&
     Number(inputAmount) <= Number(maxInput) &&
     Number(inputAmount) >= minDeposit;
 
-  if (!isConnected) {
+  // Check if wallet is connected based on selected chain
+  const isWalletConnected = selectedChain === 'solana'
+    ? !!solanaWallet.publicKey
+    : isConnected;
+
+  if (!isWalletConnected) {
     return (
       <div className="swap-container">
         <div className="swap-card">
           <div className="swap-header">
             <h2>USDC ⇄ USDX Swap</h2>
-            <p>Please connect your wallet to use the swap.</p>
+            <p>Please connect your {selectedChain === 'solana' ? 'Solana' : 'Base'} wallet to use the swap.</p>
           </div>
         </div>
       </div>
@@ -780,10 +830,39 @@ const Swap: React.FC = () => {
               </button>
             )}
 
+            {/* Special Referral Code Benefits Message */}
+            {referralCodeBenefits?.is_special && (
+              <div style={{
+                marginTop: '12px',
+                padding: '14px',
+                background: 'linear-gradient(135deg, #f5f1e8 0%, #faf8f3 100%)',
+                border: '2px solid #d4af37',
+                borderRadius: '12px',
+                fontSize: '13px',
+                color: '#333333',
+                fontWeight: '500',
+                lineHeight: '1.6',
+              }}>
+                <div style={{ fontWeight: '700', color: '#000000', marginBottom: '6px', fontSize: '14px' }}>
+                  🎉 Special Code: {referralCode}
+                </div>
+                <div style={{ fontSize: '12px', color: '#666666' }}>
+                  <div>✓ Minimum swap: ${referralCodeBenefits.min_swap} USDC (normally $100)</div>
+                  {referralCodeBenefits.bonus_points > 0 && (
+                    <div>✓ Bonus: +{referralCodeBenefits.bonus_points} Stable Points</div>
+                  )}
+                  <div style={{ marginTop: '4px', fontStyle: 'italic' }}>
+                    {referralCodeBenefits.description}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Error/Success Messages */}
             {inputAmount && Number(inputAmount) > 0 && Number(inputAmount) < minDeposit && (
               <div className="jupiter-error-message">
                 Minimum deposit is {minDeposit} USDC
+                {referralCodeBenefits?.is_special && ' with your special code!'}
               </div>
             )}
 
@@ -897,7 +976,7 @@ const Swap: React.FC = () => {
                     </div>
                     <div className="jupiter-info-item">
                       <span>Minimum Deposit:</span>
-                      <span>100 USDC</span>
+                      <span>{minDeposit} USDC{referralCodeBenefits?.is_special && ' ✨'}</span>
                     </div>
                   </>
                 ) : selectedToken.token === 'usdx' && selectedToken.chain === 'solana' ? (
@@ -920,7 +999,7 @@ const Swap: React.FC = () => {
                     </div>
                     <div className="jupiter-info-item">
                       <span>Minimum Deposit:</span>
-                      <span>100 USDC</span>
+                      <span>{minDeposit} USDC{referralCodeBenefits?.is_special && ' ✨'}</span>
                     </div>
                   </>
                 ) : (
@@ -943,7 +1022,7 @@ const Swap: React.FC = () => {
                     </div>
                     <div className="jupiter-info-item">
                       <span>Minimum Deposit:</span>
-                      <span>100 USDC</span>
+                      <span>{minDeposit} USDC{referralCodeBenefits?.is_special && ' ✨'}</span>
                     </div>
                   </>
                 )}
