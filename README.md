@@ -1,19 +1,17 @@
 # USDX - Solana Cypherpunk Hackathon Submission
 
-**Live App:** [app.trystable.co](https://app.trystable.co)
 **Try with special code:** `PUNK` for 5 USDC minimum + 500 Stable Points at [app.trystable.co/swap?ref=PUNK](https://app.trystable.co/swap?ref=PUNK)
 
 ---
 
 ## 🏆 What We Built for Solana
 
-USDX is a **real estate-backed stablecoin** that brings composable mortgage yield to Solana. During this hackathon, we shipped:
+USDX is the first mortgage-backed stablecoin, turning the world’s largest fixed-income asset class into a programmable, liquid dollar that earns the mortgage yield and moves efficiently across traditional and decentralized markets. USDX was developed by [Stable](https://trystable.co); we want to double the TVL of Solana. During this hackathon, we shipped:
 
 ### ✅ 1. Native USDX SPL Token
 - **Not wrapped** - true SPL token minted natively on Solana
 - Built with Anchor framework
 - Full test suite + security audits
-- 1:1 backed by locked USDC on Base
 - **Location:** `solana-programs/usdx_token/`
 
 ### ✅ 2. Wormhole Bridge (Devnet)
@@ -52,9 +50,9 @@ USDX is a **real estate-backed stablecoin** that brings composable mortgage yiel
 ### On Solana (Live on Mainnet)
 1. Visit [app.trystable.co](https://app.trystable.co)
 2. Connect Phantom or Solflare wallet
-3. Select "USDX (Solana)" from token dropdown
+3. "USDX (Solana)" will be selected for you from the token dropdown
 4. Swap USDC → USDX (use code `PUNK` for 5 USDC min)
-5. Stake to earn 7% APY from real mortgage yields
+5. Stake to earn 5% APY from real mortgage yields
 
 ### Solana Blinks (Twitter/Discord)
 Try swapping directly from social media:
@@ -241,7 +239,7 @@ frontend/
 ## 🌐 Links
 
 - **Live App:** [app.trystable.co](https://app.trystable.co)
-- **Swap with Referral:** [app.trystable.co/swap?ref=PUNK](https://app.trystable.co/swap?ref=PUNK)
+- **Swap with Referral:** [app.trystable.co?ref=IRON-SKY-2](https://app.trystable.co?ref=IRON-SKY-2)
 - **Main Repository:** [ecosystem-contracts/usdx-contracts](../ecosystem-contracts/usdx-contracts)
 - **Twitter:** [@StableFinance](https://twitter.com/StableFinance)
 
