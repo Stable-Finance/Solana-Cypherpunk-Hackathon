@@ -297,19 +297,4 @@ REACT_APP_ENVIRONMENT=production
 
 The referral program is **production-ready** with a simple Google Sheets backend. It's designed for quick deployment before the hackathon deadline and can be migrated to a proper database later if needed.
 
-**Total Implementation:**
-- ✅ Backend API (4 new endpoints)
-- ✅ Frontend UI (Referrals page + Swap integration)
-- ✅ Leaderboard with combined points
-- ✅ Google Sheets integration
-- ✅ URL parameter support
-- ✅ Setup documentation
-
-**Estimated Time to Deploy:**
-- Google Sheets setup: 15-30 minutes
-- Backend deployment: 5-10 minutes
-- Frontend deployment: 5-10 minutes
-- Testing: 15-30 minutes
-- **Total: 40-80 minutes**
-
-Ready to launch! 🚀
+The full referral program is expected to launch in November 2025.
